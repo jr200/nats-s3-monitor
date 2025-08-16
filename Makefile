@@ -1,7 +1,6 @@
 include .env.local
 
 K8S_NAMESPACE ?= nats-s3-monitor
-CHART_NAME ?= bento-custom-chart
 
 up:
 	docker compose --env-file .env.local -f compose-nats-s3-monitor.yaml -p ${TEAM_NAME} up -d
@@ -9,9 +8,8 @@ up:
 down:
 	docker compose  -f compose-nats-s3-monitor.yaml -p ${TEAM_NAME} down || echo "No running containers"
 
-.PHONY: shell
 shell:
-	docker run -it -v ./charts/bento/files/scripts:/scripts --user root --env-file .env.local --rm --entrypoint /bin/bash ${BENTO_IMAGE}
+	docker run -it -v ./scripts:/scripts --env-file .env.local --rm --entrypoint /bin/bash ${DOCKER_IMAGE}:${DOCKER_TAG}
 
 build:
 	docker build \
@@ -49,12 +47,15 @@ check:
 
 chart-secrets:
 	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
-	source .env.local.k8s && \
-		kubectl create secret generic -n ${K8S_NAMESPACE} ${CHART_NAME}-bento-secrets \
-		--from-env-file=.env.local.k8s|| echo "OK"
+	kubectl create secret generic -n ${K8S_NAMESPACE} nats-s3-monitor-secrets \
+	--from-env-file=.env.local.k8s|| echo "OK"
 
-chart-install: chart-secrets
-	helm upgrade --install -n ${K8S_NAMESPACE} ${CHART_NAME} charts/bento
+chart-install:
+	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
+	helm upgrade --install -n ${K8S_NAMESPACE} ${CHART_NAME} -f charts/values.yaml my-nats-s3-monitor bento-helm/bento
+
+chart-uninstall:
+	helm uninstall -n ${K8S_NAMESPACE} my-nats-s3-monitor || echo "OK"
 
 chart-template:
-	helm template --debug -n ${K8S_NAMESPACE} ${CHART_NAME} charts/bento
+	helm template --debug -n ${K8S_NAMESPACE} ${CHART_NAME} -f charts/values.yaml nats-s3-monitor bento-helm/bento > charts/zz_rendered.yaml
