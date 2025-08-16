@@ -134,6 +134,8 @@ class S3LatestFileCache:
             return False, None
 
         valid_files = self.known_files_df.filter(pl.col("time") <= now)
+        if valid_files.is_empty():
+            return False, None
 
         latest_file = valid_files.tail(1).item(0, "filename")
 
