@@ -48,7 +48,7 @@ image:
   repository: ghcr.io/jr200/nats-s3-monitor
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  tag: v0.0.2
 
 imagePullSecrets: []
 nameOverride: ""
@@ -183,7 +183,9 @@ updateStrategy: {}
 #     maxUnavailable: 1
 
 extraVolumes:
-  []
+  - name: nats-user-credentials-vol
+    secret:
+      secretName: nats-user-credentials
   # - name: config-map
   #   configMap:
   #     name: cm-name
@@ -192,7 +194,10 @@ extraVolumes:
   #     secretName: s-name
 
 extraVolumeMounts:
-  []
+  - name: nats-user-credentials-vol
+    mountPath: /secrets/app.creds
+    subPath: app.creds
+    readOnly: true
   # - name: config-map
   #   mountPath: /mnt/configmap
   #   readOnly: true

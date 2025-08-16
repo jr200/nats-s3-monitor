@@ -1,4 +1,4 @@
-FROM ghcr.io/jr200/bento-custom-image:v0.0.7
+FROM ghcr.io/jr200/bento-custom-image:latest
 
 USER root
 COPY scripts/ /scripts

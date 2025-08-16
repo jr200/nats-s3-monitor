@@ -23,7 +23,7 @@ nats-local-creds:
 	/bin/bash -lc 'set -euo pipefail; set -a; source .env.local; set +a; curl -fsSL https://raw.githubusercontent.com/jr200/nats-infra/main/scripts/nats-create-account.sh | /bin/bash -s -- > secrets/sa-nats-s3-monitor.creds'
 
 nats-create-stream:
-	nats stream add ${OUTPUT_NATS_STREAM} \
+	nats -s ${NATS_URL} stream add ${OUTPUT_NATS_STREAM} \
 	--subjects ${OUTPUT_NATS_SUBJECT} \
 	--storage file \
 	--replicas=1 \
@@ -48,14 +48,18 @@ check:
 chart-secrets:
 	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
 	kubectl create secret generic -n ${K8S_NAMESPACE} nats-s3-monitor-secrets \
-	--from-env-file=.env.local.k8s|| echo "OK"
+	--from-env-file=.env.local.k8s || echo "OK"
+	kubectl create secret generic -n ${K8S_NAMESPACE} nats-user-credentials \
+	--from-file=app.creds=secrets/sa-nats-s3-monitor.creds || echo "OK"
 
-chart-install:
+chart-install: chart-secrets
 	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
 	helm upgrade --install -n ${K8S_NAMESPACE} ${CHART_NAME} -f charts/values.yaml my-nats-s3-monitor bento-helm/bento
 
 chart-uninstall:
 	helm uninstall -n ${K8S_NAMESPACE} my-nats-s3-monitor || echo "OK"
+	kubectl delete secret -n ${K8S_NAMESPACE} nats-s3-monitor-secrets || echo "OK"
+	kubectl delete secret -n ${K8S_NAMESPACE} nats-user-credentials || echo "OK"
 
 chart-template:
 	helm template --debug -n ${K8S_NAMESPACE} ${CHART_NAME} -f charts/values.yaml nats-s3-monitor bento-helm/bento > charts/zz_rendered.yaml

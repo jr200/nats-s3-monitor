@@ -14,7 +14,6 @@ pipeline:
       mapping: |
         root = {}
         root.now_since_epoch_ms = this.data
-
         root.search_lookback = "${S3CACHE_LOOKBACK}"
         root.search_lookback_step = "${S3CACHE_LOOKBACK_STEP}"
         root.search_prefix = "${S3CACHE_SEARCH_PREFIX}"
