@@ -1,0 +1,15 @@
+.github/
+.mypy_cache/
+.ruff_cache/
+.git/
+.history/
+.venv/
+.vscode/
+*.bak
+*.log
+charts/
+Makefile
+private/
+**/__pycache__
+notebooks/
+secrets/

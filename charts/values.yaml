@@ -46,7 +46,7 @@ commonLabels: {}
 
 image:
   repository: ghcr.io/jr200/nats-s3-monitor
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
 
