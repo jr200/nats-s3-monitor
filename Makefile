@@ -29,22 +29,6 @@ local-creds:
 	nats context select ${NATS_SYSTEM_CONTEXT}
 	$(call RUN_WITH_ENV, .env.local, curl -fsSL https://raw.githubusercontent.com/jr200/nats-infra/main/scripts/nats-create-account.sh | /bin/bash -s -- > secrets/sa-nats-s3-monitor.creds)
 
-nats-create-stream:
-	nats -s ${NATS_URL} stream add ${OUTPUT_NATS_STREAM} \
-	--subjects ${OUTPUT_NATS_SUBJECT} \
-	--storage file \
-	--replicas=1 \
-	--retention=work \
-	--discard=old \
-	--max-msgs=-1 \
-	--max-msgs-per-subject=-1 \
-	--max-bytes=-1 \
-	--max-age=1M \
-	--max-msg-size=1k \
-	--dupe-window=1d \
-	--no-allow-rollup \
-	--no-deny-delete \
-	--no-deny-purge
 
 .PHONY: check
 check:
@@ -52,24 +36,31 @@ check:
 	ruff format
 	mypy .
 
-chart-secrets:
+chart-deps:
 	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
-	kubectl create secret generic -n ${K8S_NAMESPACE} nats-s3-monitor-secrets \
+	
+	kubectl create secret generic -n ${K8S_NAMESPACE} nats-s3-monitor-env \
 	--from-env-file=.env.local.k8s || echo "OK"
+
 	kubectl create secret generic -n ${K8S_NAMESPACE} nats-user-credentials \
 	--from-file=app.creds=secrets/sa-nats-s3-monitor.creds || echo "OK"
 
-chart-install: chart-secrets
+	kubectl create configmap -n ${K8S_NAMESPACE} nats-s3-monitor-config \
+	--from-file=config.yaml=secrets/config.yaml || echo "OK"
+
+
+chart-install: chart-deps
 	kubectl create namespace ${K8S_NAMESPACE} || echo "OK"
-	helm upgrade --install -n ${K8S_NAMESPACE} ${CHART_INSTANCE} -f charts/values.yaml bento-helm/bento
+	helm upgrade --install -n ${K8S_NAMESPACE} ${CHART_INSTANCE} -f charts/values.yaml stakater/application
+
+chart-template:
+	helm template --debug -n ${K8S_NAMESPACE} ${CHART_INSTANCE} -f charts/values.yaml stakater/application > charts/zz_rendered.yaml
 
 chart-uninstall:
 	helm uninstall -n ${K8S_NAMESPACE} ${CHART_INSTANCE} || echo "OK"
-	kubectl delete secret -n ${K8S_NAMESPACE} nats-s3-monitor-secrets || echo "OK"
+	kubectl delete secret -n ${K8S_NAMESPACE} nats-s3-monitor-env || echo "OK"
 	kubectl delete secret -n ${K8S_NAMESPACE} nats-user-credentials || echo "OK"
-
-chart-template:
-	helm template --debug -n ${K8S_NAMESPACE} ${CHART_INSTANCE} -f charts/values.yaml bento-helm/bento > charts/zz_rendered.yaml
+	kubectl delete configmap -n ${K8S_NAMESPACE} nats-s3-monitor-config || echo "OK"
 
 docker-login:
 	$(call RUN_WITH_ENV, .env.local, docker login -u $${DOCKER_USERNAME} -p $${DOCKER_PASSWORD} $${DOCKER_SERVER})

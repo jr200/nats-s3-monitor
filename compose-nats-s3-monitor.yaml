@@ -5,13 +5,13 @@ services:
     user: root
     volumes:
     - ${NATS_USER_CREDENTIALS_FILE}:/secrets/app.creds:ro
-    - ./secrets/config.yaml:/config.yaml:ro
+    - ./secrets/config.yaml:/app/config.yaml:ro
     entrypoint:
     # - sleep
     # - 365d
     command:
       - -f
-      - /config.yaml
+      - /app/config.yaml
     networks:
       - public-network
       - internal-network
