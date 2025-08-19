@@ -1,19 +1,24 @@
 [project]
 name = "nats-s3-monitor"
-version = "0.1.0"
+version = "0.0.5"
 description = "monitors an s3 bucket for new files"
 authors = [
     {name = "jr200",email = "jayshan+git@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<4.0"
 dependencies = [
-    "uvicorn (>=0.35.0,<0.36.0)",
-    "fastapi (>=0.116.1,<0.117.0)",
-    "polars (>=1.32.3,<2.0.0)",
+    "polars (>=1.32.3)",
     "boto3 (>=1.40.6,<2.0.0)",
-    "nats-py (>=2.11.0,<3.0.0)"
+    "nats-py (>=2.11.0)",
+    "pyapi-service-kit (>=0.0.9)"
 ]
+
+[tool.poetry]
+packages = [{include = "nats_s3_monitor", from = "src"}]
+
+[tool.poetry.scripts]
+start_api = "nats_s3_monitor.start_api:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

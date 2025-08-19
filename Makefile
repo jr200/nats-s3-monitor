@@ -6,14 +6,17 @@ endef
 K8S_NAMESPACE ?= nats-s3-monitor
 CHART_INSTANCE ?= my-nats-s3-monitor
 
+start_api:
+	$(call RUN_WITH_ENV, .env.local, start_api -f secrets/config.yaml)
+
 up:
 	docker compose --env-file .env.local -f compose-nats-s3-monitor.yaml -p ${TEAM_NAME} up -d
 
 down:
-	docker compose  -f compose-nats-s3-monitor.yaml -p ${TEAM_NAME} down || echo "No running containers"
+	docker compose --env-file .env.local -f compose-nats-s3-monitor.yaml -p ${TEAM_NAME} down || echo "No running containers"
 
 shell:
-	docker run -it -v ./scripts:/scripts --env-file .env.local --rm --entrypoint /bin/bash ${DOCKER_IMAGE}:${DOCKER_TAG}
+	docker run -it --env-file .env.local --rm --entrypoint /bin/bash ${DOCKER_IMAGE}:${DOCKER_TAG}
 
 build:
 	docker build \
@@ -67,3 +70,6 @@ chart-uninstall:
 
 chart-template:
 	helm template --debug -n ${K8S_NAMESPACE} ${CHART_INSTANCE} -f charts/values.yaml bento-helm/bento > charts/zz_rendered.yaml
+
+docker-login:
+	$(call RUN_WITH_ENV, .env.local, docker login -u $${DOCKER_USERNAME} -p $${DOCKER_PASSWORD} $${DOCKER_SERVER})
