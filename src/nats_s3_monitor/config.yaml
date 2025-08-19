@@ -1,0 +1,41 @@
+
+nats:
+  servers:
+    - ${NATS_URL}
+  options:
+    name: nats-s3-monitor-local-1
+    user_credentials: ${NATS_USER_CREDENTIALS_FILE}
+    verbose: true
+    max_outstanding_pings: 5
+    ping_interval: 5
+    connect_timeout: 5
+    # pedantic: true
+  streams: []
+    # - name: MY-STREAM
+    #   options:
+    #     subjects:
+    #       - my.subject.1
+    #       - my.subject.2
+    #     storage: memory
+    #     retention: limits
+
+s3:
+  endpoint_url: ${AWS_ENDPOINT_URL}
+  access_key_id: ${AWS_ACCESS_KEY_ID}
+  secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+  default_region: ${AWS_DEFAULT_REGION}
+
+service:
+  instance_id: ${NATS_S3_MONITOR_SERVICE_ID}
+  time_service_subject: ${NATS_S3_MONITOR_SERVICE_ID}.time-server
+
+monitors: []
+  # - id: my_monitor_id
+  #   bucket: my_bucket
+  #   lookback: 5d
+  #   lookback_step: 1d
+  #   search_prefix: "%Y%m%d"
+  #   update_interval: 20s
+  #   file_time_extract: "%Y%m%d/%Y%m%d_%H%M%S.jsonl.gz"
+  #   output_subject: my.subject.1
+  #   output_stream: MY-STREAM

@@ -4,36 +4,27 @@ services:
     restart: unless-stopped
     user: root
     volumes:
-    - ./secrets/sa-nats-s3-monitor.creds:/secrets/app.creds:ro
+    - ${NATS_USER_CREDENTIALS_FILE}:/secrets/app.creds:ro
+    - ./secrets/config.yaml:/config.yaml:ro
     entrypoint:
     # - sleep
     # - 365d
+    command:
+      - -f
+      - /config.yaml
     networks:
       - public-network
       - internal-network
     environment:
       # These are set by the .env.local file
-      LOG_LEVEL: ${LOG_LEVEL}
-      BENTO_DEBUG: ${BENTO_DEBUG}
       NATS_URL: ${NATS_INTERNAL_URL}
-      NATS_USER_CREDENTIALS_FILE: ${NATS_USER_CREDENTIALS_FILE}
-
-      S3CACHE_LOOKBACK: ${S3CACHE_LOOKBACK}
-      S3CACHE_LOOKBACK_STEP: ${S3CACHE_LOOKBACK_STEP}
-      S3CACHE_SEARCH_PREFIX: ${S3CACHE_SEARCH_PREFIX}
-      S3CACHE_UPDATE_INTERVAL: ${S3CACHE_UPDATE_INTERVAL}
-      INPUT_NATS_SUBJECT: ${INPUT_NATS_SUBJECT}
-      OUTPUT_NATS_SUBJECT: ${OUTPUT_NATS_SUBJECT}
-      S3CACHE_FILE_TIME_FORMAT: ${S3CACHE_FILE_TIME_FORMAT}
+      NATS_USER_CREDENTIALS_FILE: /secrets/app.creds
+      NATS_S3_MONITOR_SERVICE_ID: ${NATS_S3_MONITOR_SERVICE_ID}
 
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
       AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
-      AWS_BUCKET: ${AWS_BUCKET}
-
-    ports:
-      - "0.0.0.0:4195:4195"
 
 networks:
   public-network:
