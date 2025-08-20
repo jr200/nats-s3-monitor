@@ -28,6 +28,7 @@ async def try_report_new_files(t: datetime, js: JetStreamContext):
             data={
                 "epoch_ms": int(t.timestamp() * 1000),
                 "latest_file": latest_file,
+                "bucket": monitor.bucket,
             },
         )
 
