@@ -1,6 +1,6 @@
 [project]
 name = "nats-s3-monitor"
-version = "0.0.6"
+version = "0.0.8"
 description = "monitors an s3 bucket for new files"
 authors = [
     {name = "jr200",email = "jayshan+git@gmail.com"}

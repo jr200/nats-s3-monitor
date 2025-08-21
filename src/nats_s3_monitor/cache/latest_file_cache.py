@@ -45,7 +45,7 @@ class LatestFileCache:
         return now > next_check_time
 
     def update_cache(self, now: datetime, monitor: Any, s3_client: Any):
-        LOGGER.debug(f"Updating cache for {monitor.id}")
+        LOGGER.info(f"Updating cache for {monitor.id} @ {now.isoformat()}")
 
         search_keys = _make_search_keys(
             now, monitor.lookback, monitor.lookback_step, monitor.search_prefix

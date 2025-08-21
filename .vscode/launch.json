@@ -11,6 +11,10 @@
             "module": "nats_s3_monitor.start_api",
             "console": "integratedTerminal",
             "justMyCode": false,
+            "args": [
+                "--config",
+                "${workspaceFolder}/secrets/config.yaml"
+            ],
             "envFile": "${workspaceFolder}/.env.local"
         }
     ]
